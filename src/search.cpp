@@ -544,7 +544,7 @@ Value Search::Worker::search(
     excludedMove = ss->excludedMove;
     posKey       = pos.key();
     tte          = tt.probe(posKey, ss->ttHit);
-    ttValue   = ss->ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule60_count()) : VALUE_NONE;
+    ttValue   = ss->ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule210_count()) : VALUE_NONE;
     ttMove    = rootNode  ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
               : ss->ttHit ? tte->move()
                           : Move::none();
@@ -575,8 +575,8 @@ Value Search::Worker::search(
         }
 
         // Partial workaround for the graph history interaction problem
-        // For high rule60 counts don't produce transposition table cutoffs.
-        if (pos.rule60_count() < 110)
+        // For high rule210 counts don't produce transposition table cutoffs.
+        if (pos.rule210_count() < 140)
             return ttValue >= beta && std::abs(ttValue) < VALUE_MATE_IN_MAX_PLY
                    ? (ttValue * 3 + beta) / 4
                    : ttValue;
@@ -1320,7 +1320,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta,
     // Step 3. Transposition table lookup
     posKey  = pos.key();
     tte     = tt.probe(posKey, ss->ttHit);
-    ttValue = ss->ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule60_count()) : VALUE_NONE;
+    ttValue = ss->ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule210_count()) : VALUE_NONE;
     ttMove  = ss->ttHit ? tte->move() : Move::none();
     pvHit   = ss->ttHit && tte->is_pv();
 
