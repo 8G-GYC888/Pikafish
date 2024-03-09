@@ -133,7 +133,7 @@ Value Eval::evaluate(const Position& pos, int optimism) {
 
     int   v;
     Color stm        = pos.side_to_move();
-    int   shuffling  = pos.rule60_count();
+    int   shuffling  = pos.rule210_count();
     int   simpleEval = simple_eval(pos, stm);
 
     int   nnueComplexity;
