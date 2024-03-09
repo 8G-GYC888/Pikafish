@@ -159,7 +159,7 @@ Position& Position::set(const string& fenStr, StateInfo* si) {
         ;
 
     // 3-4. Halfmove clock and fullmove number
-    ss >> std::skipws >> st->rule60 >> gamePly;
+    ss >> std::skipws >> st->rule210 >> gamePly;
 
     // Convert from fullmove starting from 1 to gamePly starting from 0,
     // handle also common incorrect FEN with fullmove = 0.
@@ -253,7 +253,7 @@ string Position::fen() const {
 
     ss << '-';
 
-    ss << " - " << st->rule60 << " " << 1 + (gamePly - (sideToMove == BLACK)) / 2;
+    ss << " - " << st->rule210 << " " << 1 + (gamePly - (sideToMove == BLACK)) / 2;
 
     return ss.str();
 }
@@ -428,14 +428,14 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
     st->move       = m;
 
     // Increment ply counters. Clamp to 10 checks for each side in rule 60
-    // In particular, rule60 will be reset to zero later on in case of a capture.
+    // In particular, rule210 will be reset to zero later on in case of a capture.
     ++gamePly;
     if (!givesCheck || ++st->check10[sideToMove] <= 10)
     {
         if (st->check10[~sideToMove] > 10 && st->previous->checkersBB)
             ++st->check10[~sideToMove];
         else
-            ++st->rule60;
+            ++st->rule210;
     }
     ++st->pliesFromNull;
 
@@ -484,7 +484,7 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
         k ^= Zobrist::psq[captured][capsq];
 
         // Reset rule 60 counter
-        st->check10[WHITE] = st->check10[BLACK] = st->rule60 = 0;
+        st->check10[WHITE] = st->check10[BLACK] = st->rule210 = 0;
     }
 
     // Update hash key
@@ -575,7 +575,7 @@ void Position::do_null_move(StateInfo& newSt, TranspositionTable& tt) {
     st->accumulator.computed[BLACK]        = false;
 
     st->key ^= Zobrist::side;
-    ++st->rule60;
+    ++st->rule210;
     prefetch(tt.first_entry(key()));
 
     st->pliesFromNull = 0;
@@ -969,7 +969,7 @@ Value Position::detect_chases(int d, int ply) {
 bool Position::rule_judge(Value& result, int ply) {
 
     // Restore rule 60 by adding back the checks
-    int end = std::min(st->rule60 + std::max(0, st->check10[WHITE] - 10)
+    int end = std::min(st->rule210 + std::max(0, st->check10[WHITE] - 10)
                          + std::max(0, st->check10[BLACK] - 10),
                        st->pliesFromNull);
 
@@ -1017,7 +1017,7 @@ bool Position::rule_judge(Value& result, int ply) {
     }
 
     // 60 move rule
-    if (st->rule60 >= 120)
+    if (st->rule210 >= 150)
     {
         result = MoveList<LEGAL>(*this).size() ? VALUE_DRAW : mated_in(ply);
         return true;
