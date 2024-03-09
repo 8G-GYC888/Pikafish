@@ -47,7 +47,7 @@ struct StateInfo {
     Key     pawnKey;
     Value   majorMaterial[COLOR_NB];
     int16_t check10[COLOR_NB];
-    int     rule60;
+    int     rule210;
     int     pliesFromNull;
 
     // Not copied when making a move (will be recomputed anyhow)
@@ -150,7 +150,7 @@ class Position {
     Color    side_to_move() const;
     int      game_ply() const;
     bool     rule_judge(Value& result, int ply = 0);
-    int      rule60_count() const;
+    int      rule210_count() const;
     uint16_t chased(Color c);
     Value    major_material(Color c) const;
     Value    major_material() const;
@@ -269,7 +269,7 @@ inline Key Position::key() const { return adjust_key60<false>(st->key); }
 
 template<bool AfterMove>
 inline Key Position::adjust_key60(Key k) const {
-    return st->rule60 < 14 - AfterMove ? k : k ^ make_key((st->rule60 - (14 - AfterMove)) / 8);
+    return st->rule210 < 14 - AfterMove ? k : k ^ make_key((st->rule210 - (14 - AfterMove)) / 8);
 }
 
 inline Key Position::pawn_key() const { return st->pawnKey; }
@@ -282,7 +282,7 @@ inline Value Position::major_material() const {
 
 inline int Position::game_ply() const { return gamePly; }
 
-inline int Position::rule60_count() const { return st->rule60; }
+inline int Position::rule210_count() const { return st->rule210; }
 
 inline bool Position::capture(Move m) const {
     assert(m.is_ok());
